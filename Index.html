@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calendário Estético</title>
+
+  <!-- Fonte elegante -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Playfair Display', serif;
+      background: linear-gradient(135deg, #e8f5e9, #f1fff3);
+      color: #1b5e20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      width: 360px;
+    }
+
+    h1 {
+      font-size: 20px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    #today {
+      text-align: center;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    #weather {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 20px;
+      opacity: 0.8;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+    }
+
+    th {
+      font-size: 12px;
+      padding: 8px 0;
+      color: #2e7d32;
+    }
+
+    td {
+      padding: 10px;
+      border-radius: 10px;
+      cursor: default;
+      transition: 0.2s;
+    }
+
+    td:hover {
+      background: #c8e6c9;
+    }
+
+    .today {
+      background: #2e7d32;
+      color: white;
+      border-radius: 50%;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>Calendário Verde</h1>
+    <div id="today"></div>
+    <div id="weather">Carregando clima...</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Dom</th><th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th><th>Sex</th><th>Sáb</th>
+        </tr>
+      </thead>
+      <tbody id="calendar"></tbody>
+    </table>
+  </div>
+
+<script>
+const today = new Date();
+const currentDay = today.getDate();
+const currentMonth = today.getMonth();
+const currentYear = today.getFullYear();
+
+document.getElementById("today").innerText =
+  today.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+
+// -------------------- CALENDÁRIO --------------------
+function buildCalendar() {
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+  let table = "";
+  let day = 1;
+
+  for (let i = 0; i < 6; i++) {
+    table += "<tr>";
+
+    for (let j = 0; j < 7; j++) {
+      if (i === 0 && j < firstDay) {
+        table += "<td></td>";
+      } else if (day > daysInMonth) {
+        table += "<td></td>";
+      } else {
+        const isToday = day === currentDay ? "today" : "";
+        table += `<td class="${isToday}">${day}</td>`;
+        day++;
+      }
+    }
+
+    table += "</tr>";
+  }
+
+  document.getElementById("calendar").innerHTML = table;
+}
+
+buildCalendar();
+
+// -------------------- CLIMA (Open-Meteo - sem chave) --------------------
+// Sertãozinho - SP (aprox.)
+const lat = -21.137;
+const lon = -47.990;
+
+async function loadWeather() {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const temp = data.current_weather.temperature;
+    const wind = data.current_weather.windspeed;
+
+    document.getElementById("weather").innerText =
+      `🌿 ${temp}°C • Vento ${wind} km/h`;
+  } catch (e) {
+    document.getElementById("weather").innerText =
+      "Clima indisponível no momento";
+  }
+}
+
+loadWeather();
+</script>
+
+</body>
+</html>
